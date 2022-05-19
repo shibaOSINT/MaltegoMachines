@@ -1,0 +1,30 @@
+
+machine("mathieugaucheler.Imagepivot",
+    displayName:"Image pivot",
+    author:"mg",
+    description: "List the websites where an image has been seen. Bookmarks social media platforms.") {
+
+    start {
+        run("paterva.v2.SocialNetExtractImage")
+        paths{
+            run("paterva.v2.SocialNetSearchYandexImageImage", slider:30)
+            run("paterva.v2.SocialNetSearchTinEyeImageImage", slider:30)
+            run("paterva.v2.SocialNetSearchSogouImageImage", slider:30)
+        }
+
+        paths{
+            path{
+                property("url", like: "twitter.com", ignoreCase:true)
+                bookmark(0,overwrite:true) // blue
+            }
+            path{
+                property("url", like: "vk.com", ignoreCase:true)
+                bookmark(0,overwrite:true) // blue
+            }
+            path{
+                property("url", like: "facebook.com", ignoreCase:true)
+                bookmark(0,overwrite:true) // blue
+            }
+        }
+    }
+}
