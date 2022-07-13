@@ -1,0 +1,43 @@
+machine("mathieugaucheler.WebIOCsharvester", 
+        displayName:"Web IOCs harvester", 
+        author:"Mathieu Gaucheler",
+        description: "Uses Bing to search the webpages matching the query contained in the starting Phrase Entity. Then runs different regexes on these pages to extract: IPs, URLs, domains, MD5 and SHA256 hashes. Finally uses a local Transform to add translate the results into usable Entities.") {
+
+   start {
+        run("paterva.v2.PhraseToWebsite_SE", slider:20)
+        run("paterva.v2.WebsiteToURL_Expand")
+       
+        // looking for MD5, bookmark them in blue
+        type("maltego.URL", scope:"global")
+        log("Harvesting MD5 hashes",showEntities:false)
+        run("paterva.v2.mst.http.toMatchesFoundOnPage", "matchRegex":"\\b[A-Fa-f0-9]{32}\\b", slider:4000)
+        type("maltego.Phrase")
+        bookmark(0,overwrite:false) // blue
+        run("mathieugaucheler.PhraseDomainUrlIPToRefangedVersion")
+
+        // looking for SHA256, bookmark them in blue
+        type("maltego.URL", scope:"global")
+        log("Harvesting SHA256 hashes",showEntities:false)
+        run("paterva.v2.mst.http.toMatchesFoundOnPage", "matchRegex":"\\b[A-Fa-f0-9]{64}\\b", slider:4000)
+        type("maltego.Phrase")
+        bookmark(0,overwrite:false) // blue
+        run("mathieugaucheler.PhraseDomainUrlIPToRefangedVersion")
+
+        // search for defanged URLs or domains, bookmark them in green
+        type("maltego.URL", scope:"global")
+        log("Harvesting URLs / domains",showEntities:false)
+        run("paterva.v2.mst.http.toMatchesFoundOnPage", "matchRegex":"[-a-zA-Z0-9()@:%_+.~#?&/=\\[\\]]*\\[\\.\\][-a-zA-Z0-9()@:%_\\+.~#?&\\/=]*", slider:4000)
+        type("maltego.Phrase")
+        bookmark(1,overwrite:false) // green
+        run("mathieugaucheler.PhraseDomainUrlIPToRefangedVersion")
+
+        // search for IP addresses (defanged or not, with or without port), bookmark them in yellow
+        type("maltego.URL", scope:"global")
+        log("Harvesting IP addresses",showEntities:false)
+        run("paterva.v2.mst.http.toMatchesFoundOnPage", "matchRegex":"\\b[\\d]{1,3}\\[?\\.\\]?[\\d]{1,3}\\[?\\.\\]?[\\d]{1,3}\\[?\\.\\]?[\\d]{1,3}(:\\d+)?\\b", slider:4000)
+        type("maltego.Phrase")
+        bookmark(2,overwrite:true) // yellow
+        run("mathieugaucheler.PhraseDomainUrlIPToRefangedVersion")
+    }
+}
+
