@@ -1,0 +1,22 @@
+machine("mathieugaucheler.APTtoCISAIOCs",
+        displayName:"APT to CISA IOCs",
+        author:"Mathieu Gaucheler",
+        description: "Harvest CISA advisories linked with a particular threat actor and extract IOCs from them") {
+
+    start {
+        run("mathieugaucheler.aliasapttocisagovstring")
+        run("paterva.v2.PhraseToURLS_SE", "PhraseToURLS_SE.exact_match":true)
+        value(like: "cisa.gov", ignoreCase:true)
+        value(like: "cybersecurity-advisories")
+        bookmark(4,overwrite:true)
+        paths{
+          paths{
+            run("paterva.v2.datapass-crypto.maltego.regex-lib.to_defanged_urls_0")
+            run("paterva.v2.datapass-crypto.maltego.regex-lib.to_ipv4_addresses_0")
+            run("paterva.v2.datapass-crypto.maltego.regex-lib.to_hashes_0")
+            run("paterva.v2.datapass-crypto.maltego.regex-lib.to_attack_ids_0")
+            run("paterva.v2.datapass-crypto.maltego.regex-lib.to_cves_0")
+          }
+        }
+    }
+}
